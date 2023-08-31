@@ -45,6 +45,8 @@ func TestSet(t *testing.T) {
 		t.Errorf("Set() = %v, want %v", err, "nil")
 	}
 
+	err = nil
+
 	// check that the key exists
 	val, err := db.Get("testkey")
 	if err != nil {
@@ -68,7 +70,7 @@ func TestSet(t *testing.T) {
 
 // Test Get
 func TestGet(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"), WithSyncPolicy(buntdb.Always))
+	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("test332"), WithSyncPolicy(buntdb.Always))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -90,6 +92,37 @@ func TestGet(t *testing.T) {
 
 	// close the connection
 	err = db.db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Test Get with non existing key
+func TestGetWithNonExistingKey(t *testing.T) {
+	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = nil
+	// check that the key does not exist, err should be ErrNotFound (not nil) and val should be ""
+	val, err := db.Get("testkeynotfound")
+	// check if err is not nil
+	if err != nil {
+		// err should be ErrNotFound
+		if err.Error() != buntdb.ErrNotFound.Error() {
+			t.Errorf("Get() = %v, want %v", val, "ErrNotFound")
+		}
+	}
+
+	if val != "" {
+		t.Errorf("Get() = %v, want %v", val, "")
+	}
+
+	// close the connection
+	err = db.Close()
 	if err != nil {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
@@ -131,7 +164,7 @@ func TestDelete(t *testing.T) {
 		t.Errorf("Init() = %v, want %v", err, "nil")
 	}
 
-	err = db.Set("testkey", "testvalue", 5000)
+	err = db.Set("testkey", "testvalue", 10*time.Second)
 	if err != nil {
 		t.Errorf("Set() = %v, want %v", err, "nil")
 	}
@@ -149,7 +182,23 @@ func TestDelete(t *testing.T) {
 	// delete the key
 	err = db.Delete("testkey")
 	if err != nil {
-		t.Errorf("Delete() = %v, want %v", err, "nil")
+		t.Errorf("Delete() = %v, want %v", err, nil)
+	}
+}
+
+// Test Delete with non existing key
+func TestDeleteWithNonExistingKey(t *testing.T) {
+	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = nil
+	// delete the key
+	err = db.Delete("testkey")
+	if err != nil && err.Error() != "not found" {
+		t.Errorf("Delete() = %v, want %v", err.Error(), "not found")
 	}
 }
 
@@ -185,7 +234,7 @@ func TestSetWithExpiration(t *testing.T) {
 	if err != nil {
 		// err should be ErrNotFound
 		if err != buntdb.ErrNotFound {
-			t.Errorf("Get() = %v, want %v", err, "ErrNotFound")
+			t.Errorf("Get() = %v, want %v", val, "ErrNotFound")
 		}
 	} else {
 		t.Errorf("Get() = %v, want %v", err, "nil")
@@ -201,10 +250,4 @@ func TestSetWithExpiration(t *testing.T) {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
 
-}
-
-// Remove all the test databases
-func TestRemoveAll(t *testing.T) {
-	// remove all the test databases
-	os.RemoveAll("./test_*.db")
 }
