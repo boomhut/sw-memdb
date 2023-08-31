@@ -178,6 +178,11 @@ func (db *DB) Init(options ...BuntDbOptionsFn) error {
 		buntOptions.OnExpiredSync = config.OnExpiredSync
 	}
 
+	// if collection is set, use it
+	if config.collection != "" {
+		db.collection = config.collection
+	}
+
 	// read config
 	must(db.db.ReadConfig(buntOptions))
 
@@ -201,7 +206,7 @@ func (db *DB) Set(key string, value string, exp time.Duration) error {
 	return db.db.Update(func(tx *bunt.Tx) error {
 
 		// set the key/value
-		_, _, err := tx.Set(key, value, &bunt.SetOptions{Expires: true, TTL: exp})
+		_, _, err := tx.Set(db.collection+":"+key, value, &bunt.SetOptions{Expires: true, TTL: exp})
 		if err != nil {
 			return err
 		}
@@ -215,10 +220,11 @@ func (db *DB) Set(key string, value string, exp time.Duration) error {
 func (db *DB) Get(key string) (interface{}, error) {
 	var value interface{}
 	err := db.db.View(func(tx *bunt.Tx) error {
-		val, err := tx.Get(key)
+		val, err := tx.Get(db.collection + ":" + key)
 		if err != nil {
-			if err == bunt.ErrNotFound {
-				val = ""
+			if err.Error() == bunt.ErrNotFound.Error() {
+
+				value = ""
 				return err
 			}
 		}
@@ -234,8 +240,17 @@ func (db *DB) Get(key string) (interface{}, error) {
 // Delete deletes a key/value pair.
 func (db *DB) Delete(key string) error {
 	return db.db.Update(func(tx *bunt.Tx) error {
-		_, err := tx.Delete(key)
-		return err
+		_, err := tx.Delete(db.collection + ":" + key)
+		if err != nil {
+			if err.Error() == bunt.ErrNotFound.Error() {
+				return err
+			} else {
+				return nil
+			}
+		}
+
+		return nil
+
 	})
 }
 
@@ -258,7 +273,16 @@ func mustReturn(value interface{}, err error) interface{} {
 	return value
 }
 
+// onError run the callback if the error is not nil.
+func onError(err error, callback func(err error)) {
+	// if err is not nil, run the callback
+	if err != nil {
+		// run the callback
+		callback(err)
+	}
+}
+
 // getTempFileName returns a temporary file name. [unix timestamp].db
 func getTempFileName() string {
-	return time.Now().Format("20060102150405") + ".db"
+	return time.Now().Format("test_20060102150405") + ".db"
 }
