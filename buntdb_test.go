@@ -546,3 +546,54 @@ func TestSettingSameKeyInTwoCollectionsInSameDatabaseToDifferentValuesAndGetValu
 	}
 
 }
+
+// Test GetKeys
+func TestGetKeys(t *testing.T) {
+	// open the first database
+	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+
+	// set some data in the first collection
+	str := "testvalue1"
+
+	// set the key/value
+	err := db1.Set("testkey1", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue2"
+
+	// set the key/value
+	err = db1.Set("testkey2", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue3"
+
+	// set the key/value
+	err = db1.Set("testkey3", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	keys, err := db1.GetKeys()
+	if err != nil {
+		t.Errorf("GetKeys() = %v, want %v", err, "nil")
+	}
+
+	if len(keys) != 3 {
+		t.Errorf("GetKeys() = %v, want %v", len(keys), 3)
+	}
+
+	t.Log(keys)
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
