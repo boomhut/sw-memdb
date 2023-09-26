@@ -40,13 +40,6 @@ func defaultBuntDbOptions() buntDbOptions {
 
 // NewBuntDb creates a new BuntDb.
 func NewBuntDb(options ...BuntDbOptionsFn) *DB {
-	// create the database handle
-	db := &DB{
-		db:         nil,
-		file:       getTempFileName(),
-		collection: "",
-		mode:       "",
-	}
 	// default options
 	opts := defaultBuntDbOptions()
 
@@ -55,11 +48,29 @@ func NewBuntDb(options ...BuntDbOptionsFn) *DB {
 		option(&opts)
 	}
 
+	// create the database handle
+	db := &DB{
+		file:       opts.file, // getTempFileName(),
+		collection: opts.collection,
+		mode:       opts.mode,
+	}
+
+	// options to bunt
+	buntOptions := &bunt.Config{
+		SyncPolicy:           opts.SyncPolicy,
+		AutoShrinkDisabled:   opts.AutoShrinkDisabled,
+		AutoShrinkPercentage: opts.AutoShrinkPercentage,
+		AutoShrinkMinSize:    opts.AutoShrinkMinSize,
+		OnExpired:            opts.OnExpired,
+		OnExpiredSync:        opts.OnExpiredSync,
+	}
+
 	// Open the data.db file. It will be created if it doesn't exist.
 	db.db = mustReturn(bunt.Open(db.file)).(*bunt.DB)
-
-	// initialize the database
-	must(db.Init(options...))
+	// read config
+	must(db.db.ReadConfig(buntOptions))
+	// set config
+	must(db.db.SetConfig(*buntOptions))
 
 	return db
 }
@@ -76,8 +87,7 @@ func WithFile(file string) BuntDbOptionsFn {
 	}
 }
 
-// TODO: Implement WithCollection?
-// WithCollection sets the collection name. NOT IMPLEMENTED YET.
+// WithCollection sets the collection name.
 func WithCollection(collection string) BuntDbOptionsFn {
 	return func(o *buntDbOptions) {
 		o.collection = collection
@@ -146,12 +156,12 @@ func (db *DB) Init(options ...BuntDbOptionsFn) error {
 
 	// options to bunt
 	buntOptions := &bunt.Config{
-		SyncPolicy:         config.SyncPolicy,
-		AutoShrinkDisabled: config.AutoShrinkDisabled,
-		// AutoShrinkPercentage: config.AutoShrinkPercentage,
-		// AutoShrinkMinSize:    config.AutoShrinkMinSize,
-		// OnExpired:            config.OnExpired,
-		// OnExpiredSync:        config.OnExpiredSync,
+		SyncPolicy:           config.SyncPolicy,
+		AutoShrinkDisabled:   config.AutoShrinkDisabled,
+		AutoShrinkPercentage: config.AutoShrinkPercentage,
+		AutoShrinkMinSize:    config.AutoShrinkMinSize,
+		OnExpired:            config.OnExpired,
+		OnExpiredSync:        config.OnExpiredSync,
 	}
 
 	// if set to config, use it
@@ -207,6 +217,22 @@ func (db *DB) Set(key string, value string, exp time.Duration) error {
 
 		// set the key/value
 		_, _, err := tx.Set(db.collection+":"+key, value, &bunt.SetOptions{Expires: true, TTL: exp})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+}
+
+// SetWithNoExpiration sets the value for a key with no expiration.
+func (db *DB) SetWithNoExpiration(key string, value string) error {
+
+	return db.db.Update(func(tx *bunt.Tx) error {
+
+		// set the key/value
+		_, _, err := tx.Set(db.collection+":"+key, value, &bunt.SetOptions{Expires: false})
 		if err != nil {
 			return err
 		}
