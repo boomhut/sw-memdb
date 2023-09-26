@@ -280,6 +280,25 @@ func (db *DB) Delete(key string) error {
 	})
 }
 
+// GetKeys returns all keys from the database collection.
+func (db *DB) GetKeys() ([]string, error) {
+
+	var keys []string
+
+	err := db.db.View(func(tx *bunt.Tx) error {
+
+		// get all keys
+		err := tx.AscendKeys(db.collection+":*", func(key, value string) bool {
+			keys = append(keys, key)
+			return true
+		})
+
+		return err
+	})
+
+	return keys, err
+}
+
 // must is a helper that wraps a call returning (_, error) and panics if the
 // error is non-nil.
 func must(err error) {
