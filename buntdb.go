@@ -289,6 +289,9 @@ func (db *DB) GetKeys() ([]string, error) {
 
 		// get all keys
 		err := tx.AscendKeys(db.collection+":*", func(key, value string) bool {
+			// strip the collection name
+			key = key[len(db.collection)+1:]
+			// append the key
 			keys = append(keys, key)
 			return true
 		})
