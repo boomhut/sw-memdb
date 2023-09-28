@@ -550,7 +550,7 @@ func TestSettingSameKeyInTwoCollectionsInSameDatabaseToDifferentValuesAndGetValu
 // Test GetKeys
 func TestGetKeys(t *testing.T) {
 	// open the first database
-	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable5"))
 
 	// set some data in the first collection
 	str := "testvalue1"

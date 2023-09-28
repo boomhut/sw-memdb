@@ -280,6 +280,42 @@ func (db *DB) Delete(key string) error {
 	})
 }
 
+// var delkeys []string
+// tx.AscendKeys("object:*", func(k, v string) bool {
+// 	if someCondition(k) == true {
+// 		delkeys = append(delkeys, k)
+// 	}
+// 	return true // continue
+// })
+// for _, k := range delkeys {
+// 	if _, err = tx.Delete(k); err != nil {
+// 		return err
+// 	}
+// }
+
+// DeleteWhere deletes all key/value pairs that match the condition.
+func (db *DB) DeleteWhere(condition func(key string, value string) bool) error {
+	return db.db.Update(func(tx *bunt.Tx) error {
+
+		var delkeys []string
+		tx.AscendKeys(db.collection+":*", func(k, v string) bool {
+			if condition(k, v) {
+				delkeys = append(delkeys, k)
+			}
+			return true // continue
+		})
+
+		for _, k := range delkeys {
+			if _, err := tx.Delete(k); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+}
+
 // GetKeys returns all keys from the database collection.
 func (db *DB) GetKeys() ([]string, error) {
 
