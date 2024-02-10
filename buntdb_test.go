@@ -8,9 +8,14 @@ import (
 	"github.com/tidwall/buntdb"
 )
 
+var (
+	tempfile1, tempfile2, tempfile3, tempfile4, tempfile5, tempfile6, tempfile7, tempfile8, tempfile9, tempfile10, tempfile11, tempfile12, tempfile13, tempfile14, tempfile15, tempfile16, tempfile17, tempfile18, tempfile19 string
+)
+
 // Test NewConnection
 func TestNewConnection(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile1 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile1), WithMode("memory"), WithCollection("testtable"))
 	if db == nil {
 		t.Errorf("NewConnection() = %v, want %v", db, "not nil")
 	}
@@ -25,7 +30,8 @@ func TestNewConnection(t *testing.T) {
 
 // Test Init
 func TestInit(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile2 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile2), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -34,7 +40,8 @@ func TestInit(t *testing.T) {
 
 // Test Set
 func TestSet(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile3 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile3), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -70,7 +77,8 @@ func TestSet(t *testing.T) {
 
 // Test Get
 func TestGet(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("test332"), WithSyncPolicy(buntdb.Always))
+	tempfile4 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile4), WithMode("memory"), WithCollection("test332"), WithSyncPolicy(buntdb.Always))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -100,7 +108,8 @@ func TestGet(t *testing.T) {
 
 // Test Get with non existing key
 func TestGetWithNonExistingKey(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile5 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile5), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -131,7 +140,8 @@ func TestGetWithNonExistingKey(t *testing.T) {
 
 // Test Close
 func TestClose(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile6 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile6), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -158,7 +168,8 @@ func TestClose(t *testing.T) {
 
 // Test Delete
 func TestDelete(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile7 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile7), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -188,7 +199,8 @@ func TestDelete(t *testing.T) {
 
 // Test Delete with non existing key
 func TestDeleteWithNonExistingKey(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile8 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile8), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -204,7 +216,8 @@ func TestDeleteWithNonExistingKey(t *testing.T) {
 
 // Test Set with expiration
 func TestSetWithExpiration(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable"))
+	tempfile9 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile9), WithMode("memory"), WithCollection("testtable"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -254,7 +267,8 @@ func TestSetWithExpiration(t *testing.T) {
 
 // Test creating two collections in the same database
 func TestCreateTwoCollectionsInSameDatabase(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+	tempfile10 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile10), WithMode("memory"), WithCollection("testtable1"))
 	err := db.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -279,7 +293,8 @@ func TestCreateTwoCollectionsInSameDatabase(t *testing.T) {
 
 // Test creating two collections in the same database and setting data in both
 func TestCreateTwoCollectionsInSameDatabaseAndSetDataInBoth(t *testing.T) {
-	db := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+	tempfile11 = getTempFileName()
+	db := NewBuntDb(WithFile("test_"+tempfile11), WithMode("memory"), WithCollection("testtable1"))
 
 	// write a key/value to the first collection
 	err := db.SetWithNoExpiration("testkey1", "testvalue1")
@@ -377,7 +392,8 @@ func TestCreateTwoCollectionsInSameDatabaseAndSetDataInBoth(t *testing.T) {
 
 // Test SetWithNoExpiration
 func TestSetWithNoExpiration(t *testing.T) {
-	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+	tempfile12 = getTempFileName()
+	db1 := NewBuntDb(WithFile("test_"+tempfile12), WithMode("memory"), WithCollection("testtable1"))
 	err := db1.Init()
 	if err != nil {
 		t.Errorf("Init() = %v, want %v", err, "nil")
@@ -439,8 +455,8 @@ func TestSetWithNoExpiration(t *testing.T) {
 
 	// check that the key does not exist in the second collection
 	val, err = db1.Get("testkey2")
-	if err != nil {
-		t.Errorf("Get() = %v, want %v", err, "nil")
+	if err == nil {
+		t.Errorf("Get() = %v, want %v", val, "nil")
 	}
 
 	// close the connection
@@ -482,8 +498,9 @@ func TestSetWithNoExpiration(t *testing.T) {
 
 // Test Setting same key in two collections in the same database to different values and then getting the values back from the database
 func TestSettingSameKeyInTwoCollectionsInSameDatabaseToDifferentValuesAndGetValuesBack(t *testing.T) {
+	tempfile13 = getTempFileName()
 	// open the first database
-	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable1"))
+	db1 := NewBuntDb(WithFile("test_"+tempfile13), WithMode("memory"), WithCollection("testtable1"))
 
 	// set some data in the first collection
 	str := "testvalue1"
@@ -549,8 +566,9 @@ func TestSettingSameKeyInTwoCollectionsInSameDatabaseToDifferentValuesAndGetValu
 
 // Test GetKeys
 func TestGetKeys(t *testing.T) {
+	tempfile14 = getTempFileName()
 	// open the first database
-	db1 := NewBuntDb(WithFile("test_"+getTempFileName()), WithMode("memory"), WithCollection("testtable5"))
+	db1 := NewBuntDb(WithFile("test_"+tempfile14), WithMode("memory"), WithCollection("testtable5"))
 
 	// set some data in the first collection
 	str := "testvalue1"
@@ -596,4 +614,321 @@ func TestGetKeys(t *testing.T) {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
 
+}
+
+// Test GetKeys with no keys
+func TestGetKeysWithNoKeys(t *testing.T) {
+	tempfile15 = getTempFileName()
+	// open the first database
+	db1 := NewBuntDb(WithFile("test_a"+tempfile15), WithMode("memory"), WithCollection("testtable5"))
+
+	keys, err := db1.GetKeys()
+	if err != nil {
+		t.Errorf("GetKeys() = %v, want %v", err, "nil")
+	}
+
+	if len(keys) != 0 {
+		t.Errorf("GetKeys() = %v, want %v", len(keys), 0)
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Test DeleteWhere
+func TestDeleteWhere(t *testing.T) {
+	tempfile16 = getTempFileName()
+	// open the first database
+	db1 := NewBuntDb(WithFile("test_"+tempfile16), WithMode("memory"), WithCollection("testtable5"))
+
+	// set some data in the first collection
+	str := "testvalue1"
+
+	// set the key/value
+	err := db1.Set("testkey1", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue2"
+
+	// set the key/value
+	err = db1.Set("testkey2", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue3"
+
+	// set the key/value
+	err = db1.Set("testkey3", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// delete the keys
+	err = db1.DeleteWhere(func(key, value string) bool {
+		return value == "testvalue1" || value == "testvalue2"
+	})
+	if err != nil {
+		t.Errorf("DeleteWhere() = %v, want %v", err, "nil")
+	}
+
+	keys, err := db1.GetKeys()
+	if err != nil {
+		t.Errorf("GetKeys() = %v, want %v", err, "nil")
+	}
+
+	if len(keys) != 1 {
+		t.Errorf("GetKeys() = %v, want %v", len(keys), 1)
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Test GetKeys
+func TestGetKeysAfterDeleteWhere(t *testing.T) {
+	tempfile17 = getTempFileName()
+	// open the first database
+	db1 := NewBuntDb(WithFile("test_"+tempfile17), WithMode("memory"), WithCollection("testtable5"))
+
+	// set some data in the first collection
+	str := "testvalue1"
+
+	// set the key/value
+	err := db1.Set("testkey1", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue2"
+
+	// set the key/value
+	err = db1.Set("testkey2", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str = "testvalue3"
+
+	// set the key/value
+	err = db1.Set("testkey3", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// delete the keys
+	err = db1.DeleteWhere(func(key, value string) bool {
+		return value == "testvalue1" || value == "testvalue2"
+	})
+	if err != nil {
+		t.Errorf("DeleteWhere() = %v, want %v", err, "nil")
+	}
+
+	keys, err := db1.GetKeys()
+	if err != nil {
+		t.Errorf("GetKeys() = %v, want %v", err, "nil")
+	}
+
+	if len(keys) != 1 {
+		t.Errorf("GetKeys() = %v, want %v", len(keys), 1)
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Test if collections work with the same file
+func TestCollectionsWithSameFile(t *testing.T) {
+	tempfile18 = getTempFileName()
+	db1 := NewBuntDb(WithFile("test_"+tempfile18), WithMode("memory"), WithCollection("testtable1"))
+	err := db1.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str := "testvalue1"
+
+	// set the key/value
+	err = db1.Set("testkey1", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+	db2 := NewBuntDb(WithFile(db1.file), WithMode("memory"), WithCollection("testtable2"))
+	err = db2.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the second collection
+	str = "testvalue2"
+
+	// set the key/value
+	err = db2.Set("testkey2", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// close the connection
+	err = db2.Close()
+	if err != nil {
+
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+	// open the first database again
+	db1 = NewBuntDb(WithFile(db1.file), WithMode("memory"), WithCollection("testtable1"))
+	err = db1.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// check that the key exists in the first collection
+	val, err := db1.Get("testkey1")
+	if err != nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue1" {
+		t.Errorf("Get() = %v, want %v", val, "testvalue1")
+	}
+
+	// open the second collection again
+	db1.Init(WithCollection("testtable2"))
+
+	// check that the key exists in the second collection
+	val, err = db1.Get("testkey2")
+	if err != nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue2" {
+		t.Errorf("Get() = %v, want %v", val, "testvalue2")
+	}
+
+}
+
+// Test if collections work with the same file and setting data in both collections
+func TestCollectionsWithSameFileAndSetDataInBoth(t *testing.T) {
+	tempfile19 = getTempFileName()
+	db1 := NewBuntDb(WithFile("test_"+tempfile19), WithMode("memory"), WithCollection("domains"))
+	err := db1.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the first collection
+	str := "example.com"
+	err = db1.Set("example.com", "testvalue1", 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+	db2 := NewBuntDb(WithFile(db1.file), WithMode("memory"), WithCollection("users"))
+	err = db2.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// set some data in the second collection
+	str = "testvalue2"
+	err = db2.Set("testkey2", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// verify that the key exists in the second collection
+	val, err := db2.Get("testkey2")
+	if err != nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue2" {
+		t.Errorf("Get() = %v, want %v", val, "testvalue2")
+	}
+
+	// verify that the first key does not exist in the second collection
+	_, err = db2.Get("example.com")
+	if err == nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	err = db2.Init(WithCollection("domains"), WithAutoShrinkDisabled(false), WithAutoShrinkMinSize(100), WithAutoShrinkPercentage(30), WithOnExpired(func(keys []string) { t.Log("expired") }), WithOnExpiredSync(func(key, value string, tx *buntdb.Tx) error { return nil }))
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	// verify that the first key does exist in the first collection
+
+	val, err = db2.Get("example.com")
+	if err != nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue1" {
+		t.Errorf("Get() = %v, want %v", val, "testvalue1")
+	}
+
+	// close the connection
+	err = db2.Close()
+	if err != nil {
+
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Clean up
+func TestCleanup(t *testing.T) {
+	// delete the database files
+	os.Remove("./test_" + tempfile1)
+	os.Remove("./test_" + tempfile2)
+	os.Remove("./test_" + tempfile3)
+	os.Remove("./test_" + tempfile4)
+	os.Remove("./test_" + tempfile5)
+	os.Remove("./test_" + tempfile6)
+	os.Remove("./test_" + tempfile7)
+	os.Remove("./test_" + tempfile8)
+	os.Remove("./test_" + tempfile9)
+	os.Remove("./test_" + tempfile10)
+	os.Remove("./test_" + tempfile11)
+	os.Remove("./test_" + tempfile12)
+	os.Remove("./test_" + tempfile13)
+	os.Remove("./test_" + tempfile14)
+	os.Remove("./test_a" + tempfile15)
+	os.Remove("./test_" + tempfile16)
+	os.Remove("./test_" + tempfile17)
+	os.Remove("./test_" + tempfile18)
+	os.Remove("./test_" + tempfile19)
 }
