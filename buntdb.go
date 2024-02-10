@@ -147,7 +147,7 @@ func WithOnExpiredSync(onExpiredSync func(key, value string, tx *bunt.Tx) error)
 func (db *DB) Init(options ...BuntDbOptionsFn) error {
 
 	// buntdb config
-	config := defaultBuntDbOptions()
+	config := buntDbOptions{}
 
 	// apply user options
 	for _, option := range options {
@@ -295,6 +295,25 @@ func (db *DB) Delete(key string) error {
 
 // DeleteWhere deletes all key/value pairs that match the condition.
 func (db *DB) DeleteWhere(condition func(key string, value string) bool) error {
+	// return db.db.Update(func(tx *bunt.Tx) error {
+
+	// 	var delkeys []string
+	// 	tx.AscendKeys("*", func(k, v string) bool {
+	// 		if condition(k, v) {
+	// 			delkeys = append(delkeys, k)
+	// 		}
+	// 		return true // continue
+	// 	})
+
+	// 	for _, k := range delkeys {
+	// 		if _, err := tx.Delete(k); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+
+	// 	return nil
+
+	// })
 	return db.db.Update(func(tx *bunt.Tx) error {
 
 		var delkeys []string
@@ -366,7 +385,15 @@ func onError(err error, callback func(err error)) {
 	}
 }
 
+var TempFileName string
+
 // getTempFileName returns a temporary file name. [unix timestamp].db
-func getTempFileName() string {
+func getTempFileName(n ...bool) string {
+	// if TempFileName != "" && n == false {
+	// 	return TempFileName
+	// } else {
+	// 	TempFileName = time.Now().Format("test_20060102150405") + ".db"
+	// 	return TempFileName
+	// }
 	return time.Now().Format("test_20060102150405") + ".db"
 }
