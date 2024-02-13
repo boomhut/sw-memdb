@@ -33,7 +33,7 @@ func defaultBuntDbOptions() buntDbOptions {
 	return buntDbOptions{
 		file:       "data.db",
 		collection: "data",
-		mode:       "memory",
+		mode:       "file",
 		SyncPolicy: bunt.EverySecond,
 	}
 }
@@ -63,6 +63,12 @@ func NewBuntDb(options ...BuntDbOptionsFn) *DB {
 		AutoShrinkMinSize:    opts.AutoShrinkMinSize,
 		OnExpired:            opts.OnExpired,
 		OnExpiredSync:        opts.OnExpiredSync,
+	}
+
+	// set persistence mode
+	if db.mode == "memory" {
+		// in memory
+		db.file = ":memory:"
 	}
 
 	// Open the data.db file. It will be created if it doesn't exist.
@@ -207,6 +213,8 @@ func (db *DB) Init(options ...BuntDbOptionsFn) error {
 
 // Close closes the database.
 func (db *DB) Close() error {
+
+	// close the database
 	return db.db.Close()
 }
 
@@ -261,6 +269,44 @@ func (db *DB) Get(key string) (interface{}, error) {
 	})
 
 	return value, err
+}
+
+// GetFromCollection gets the value for a key from a collection.
+func (db *DB) GetFromCollection(collection string, key string) (interface{}, error) {
+	var value interface{}
+	err := db.db.View(func(tx *bunt.Tx) error {
+		val, err := tx.Get(collection + ":" + key)
+		if err != nil {
+			if err.Error() == bunt.ErrNotFound.Error() {
+
+				value = ""
+				return err
+			}
+		}
+
+		value = val
+
+		return nil
+	})
+
+	return value, err
+}
+
+// DeleteFromCollection deletes a key/value pair from a collection.
+func (db *DB) DeleteFromCollection(collection string, key string) error {
+	return db.db.Update(func(tx *bunt.Tx) error {
+		_, err := tx.Delete(collection + ":" + key)
+		if err != nil {
+			if err.Error() == bunt.ErrNotFound.Error() {
+				return err
+			} else {
+				return nil
+			}
+		}
+
+		return nil
+
+	})
 }
 
 // Delete deletes a key/value pair.
@@ -388,12 +434,18 @@ func onError(err error, callback func(err error)) {
 var TempFileName string
 
 // getTempFileName returns a temporary file name. [unix timestamp].db
-func getTempFileName(n ...bool) string {
+func getTempFileName(n ...string) string {
+	var label string
+	if len(n) > 0 {
+		label = n[0]
+	} else {
+		label = ""
+	}
 	// if TempFileName != "" && n == false {
 	// 	return TempFileName
 	// } else {
 	// 	TempFileName = time.Now().Format("test_20060102150405") + ".db"
 	// 	return TempFileName
 	// }
-	return time.Now().Format("test_20060102150405") + ".db"
+	return time.Now().Format(label+"20060102150405") + ".db"
 }
