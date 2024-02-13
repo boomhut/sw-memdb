@@ -1,6 +1,7 @@
 package swmemdb
 
 import (
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -9,7 +10,7 @@ import (
 )
 
 var (
-	tempfile1, tempfile2, tempfile3, tempfile4, tempfile5, tempfile6, tempfile7, tempfile8, tempfile9, tempfile10, tempfile11, tempfile12, tempfile13, tempfile14, tempfile15, tempfile16, tempfile17, tempfile18, tempfile19, tempfile20, tempfile21 string
+	tempfile1, tempfile2, tempfile3, tempfile4, tempfile5, tempfile6, tempfile7, tempfile8, tempfile9, tempfile10, tempfile11, tempfile12, tempfile13, tempfile14, tempfile15, tempfile16, tempfile17, tempfile18, tempfile19, tempfile20, tempfile21, tempfile22 string
 )
 
 // Test NewConnection
@@ -216,6 +217,20 @@ func TestDelete(t *testing.T) {
 		if err.Error() != buntdb.ErrNotFound.Error() {
 			t.Errorf("Get() = %v, want %v", val, "ErrNotFound")
 		}
+	}
+
+	// delete the key again, err should be ErrNotFound (not nil)
+	err = db.Delete("testkey")
+	if err != nil {
+		if err.Error() != buntdb.ErrNotFound.Error() {
+			t.Errorf("Delete() = %v, want %v", err.Error(), "ErrNotFound")
+		}
+	}
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
 
 }
@@ -996,11 +1011,14 @@ func TestDeleteFromCollection(t *testing.T) {
 		t.Errorf("Set() = %v, want %v", err, "nil")
 	}
 
+	err = nil
+	// delete the key
 	err = db.DeleteFromCollection("testtable", "testkey")
 	if err != nil {
 		t.Errorf("DeleteFromCollection() = %v, want %v", err, "nil")
 	}
 
+	err = nil
 	// check that the key does not exist, err should be ErrNotFound (not nil) and val should be ""
 	val, err := db.GetFromCollection("testtable", "testkey")
 	// check if err is not nil
@@ -1021,6 +1039,80 @@ func TestDeleteFromCollection(t *testing.T) {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
 
+}
+
+// TestSetToCollection
+func TestSetToCollection(t *testing.T) {
+	tempfile22 = getTempFileName("TestSetToCollection")
+	db := NewBuntDb(WithFile("test_"+tempfile22), WithMode("file"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = db.SetToCollection("testtable", "testkey", "testvalue", 5*time.Second)
+	if err != nil {
+		t.Errorf("SetToCollection() = %v, want %v", err, "nil")
+	}
+
+	val, err := db.GetFromCollection("testtable", "testkey")
+	if err != nil {
+		t.Errorf("GetFromCollection() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue" {
+		t.Errorf("GetFromCollection() = %v, want %v", val, "testvalue")
+	}
+
+	// get non existing key from the collection
+	val, err = db.GetFromCollection("testtable", "testkeynotfound")
+	if err == nil || val != "" {
+		t.Errorf("GetFromCollection() = %v, want %v", err, "nil")
+	}
+
+	t.Log(val)
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// Test DeleteFromCollection with non existing key
+func TestDeleteFromCollectionWithNonExistingKey(t *testing.T) {
+	db := NewBuntDb(WithMode("memory"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = nil
+	// delete the key
+	err = db.DeleteFromCollection("testtable", "testkey")
+	if err != nil && err.Error() != "not found" {
+		t.Errorf("DeleteFromCollection() = %v, want %v", err.Error(), "not found")
+	}
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
+// getTempFileName returns a temporary file name. [unix timestamp].db
+func getTempFileName(n ...string) string {
+	var label string
+	if len(n) > 0 {
+		label = n[0]
+	} else {
+		label = ""
+	}
+
+	return time.Now().Format(label+"20060102150405") + ".db"
 }
 
 // Clean up
@@ -1047,7 +1139,96 @@ func TestCleanup(t *testing.T) {
 	os.Remove("./test_" + tempfile19)
 	os.Remove("./test_" + tempfile20)
 	os.Remove("./test_" + tempfile21)
+	os.Remove("./test_" + tempfile22)
 
 	// verify that the files are deleted
+
+}
+
+// // mustReturn is a helper that wraps a call returning (interface{}, error) and panics if the
+// // error is non-nil.
+// func mustReturn(value interface{}, err error) interface{} {
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	return value
+// }
+
+// // onError run the callback if the error is not nil.
+// func onError(err error, callback func(err error)) {
+// 	// if err is not nil, run the callback
+// 	if err != nil {
+// 		// run the callback
+// 		callback(err)
+// 	}
+// }
+
+// Test must function
+func TestMust(t *testing.T) {
+
+	// test Must function
+	// test that it panics
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	// call must panic on purpose
+	errFunc := func() error {
+		return errors.New("test error")
+	}
+	must(errFunc())
+
+}
+
+// Test mustReturn function
+func TestMustReturn(t *testing.T) {
+
+	// test Must function
+	// test that it panics
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+
+	// call mustReturn panic on purpose
+	errFunc := func() error {
+		return errors.New("test error")
+	}
+	mustReturn(nil, errFunc())
+
+}
+
+// Test mustReturn function with nil error and non nil value should return the value
+func TestMustReturnWithNilError(t *testing.T) {
+
+	// call mustReturn with nil error and non nil value
+	errFunc := func() error {
+		return nil
+	}
+	val := mustReturn("test", errFunc())
+	if val != "test" {
+		t.Errorf("mustReturn() = %v, want %v", val, "test")
+	}
+
+}
+
+// Test onError function
+func TestOnError(t *testing.T) {
+
+	// test onError function
+	// test that it runs the callback
+	errFunc := func() error {
+		return errors.New("test error")
+	}
+	onError(errFunc(), func(err error) {
+		if err == nil {
+			t.Errorf("onError() = %v, want %v", err, "nil")
+		}
+	})
 
 }
