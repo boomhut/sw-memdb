@@ -65,8 +65,8 @@ func NewBuntDb(options ...BuntDbOptionsFn) *DB {
 		OnExpiredSync:        opts.OnExpiredSync,
 	}
 
-	// set persistence mode
-	if db.mode == "memory" {
+	// set persistence mode (check if db.mode is set to memory or mem, let's say starts with m, then it's memory mode, otherwise it's file mode)
+	if db.mode[0] == 'm' {
 		// in memory
 		db.file = ":memory:"
 	}
@@ -206,7 +206,7 @@ func (db *DB) Init(options ...BuntDbOptionsFn) error {
 	must(db.db.SetConfig(*buntOptions))
 
 	// set MEM mode if needed
-	if db.mode == "memory" {
+	if db.mode[0] == 'm' {
 		// in memory
 		db.file = ":memory:"
 	}
@@ -419,6 +419,28 @@ func (db *DB) GetKeys() ([]string, error) {
 		err := tx.AscendKeys(db.collection+":*", func(key, value string) bool {
 			// strip the collection name
 			key = key[len(db.collection)+1:]
+			// append the key
+			keys = append(keys, key)
+			return true
+		})
+
+		return err
+	})
+
+	return keys, err
+}
+
+// GetKeysFromCollection returns all keys from a collection.
+func (db *DB) GetKeysFromCollection(collection string) ([]string, error) {
+
+	var keys []string
+
+	err := db.db.View(func(tx *bunt.Tx) error {
+
+		// get all keys
+		err := tx.AscendKeys(collection+":*", func(key, value string) bool {
+			// strip the collection name
+			key = key[len(collection)+1:]
 			// append the key
 			keys = append(keys, key)
 			return true
