@@ -1103,6 +1103,43 @@ func TestDeleteFromCollectionWithNonExistingKey(t *testing.T) {
 
 }
 
+// Test GetKeysFromCollection
+func TestGetKeysFromCollection(t *testing.T) {
+	db := NewBuntDb(WithMode("mem"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = db.SetToCollection("testtable", "testkey1", "testvalue1", 5*time.Second)
+	if err != nil {
+		t.Errorf("SetToCollection() = %v, want %v", err, "nil")
+	}
+
+	err = db.SetToCollection("testtable", "testkey2", "testvalue2", 5*time.Second)
+	if err != nil {
+		t.Errorf("SetToCollection() = %v, want %v", err, "nil")
+	}
+
+	keys, err := db.GetKeysFromCollection("testtable")
+	if err != nil {
+		t.Errorf("GetKeysFromCollection() = %v, want %v", err, "nil")
+	}
+
+	if len(keys) != 2 {
+		t.Errorf("GetKeysFromCollection() = %v, want %v", len(keys), 2)
+	}
+
+	t.Log(keys)
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
 // getTempFileName returns a temporary file name. [unix timestamp].db
 func getTempFileName(n ...string) string {
 	var label string
