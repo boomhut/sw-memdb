@@ -205,6 +205,12 @@ func (db *DB) Init(options ...BuntDbOptionsFn) error {
 	// set config
 	must(db.db.SetConfig(*buntOptions))
 
+	// set MEM mode if needed
+	if db.mode == "memory" {
+		// in memory
+		db.file = ":memory:"
+	}
+
 	// open the database
 	db.db = mustReturn(bunt.Open(db.file)).(*bunt.DB)
 
@@ -271,6 +277,29 @@ func (db *DB) Get(key string) (interface{}, error) {
 	return value, err
 }
 
+// SetToCollection sets the value for a key in a collection.
+func (db *DB) SetToCollection(collection string, key string, value string, exps ...time.Duration) error {
+
+	var exp time.Duration
+	if len(exps) > 0 {
+		exp = exps[0]
+	} else {
+		exp = 0
+	}
+
+	return db.db.Update(func(tx *bunt.Tx) error {
+
+		// set the key/value
+		_, _, err := tx.Set(collection+":"+key, value, &bunt.SetOptions{Expires: true, TTL: exp})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+}
+
 // GetFromCollection gets the value for a key from a collection.
 func (db *DB) GetFromCollection(collection string, key string) (interface{}, error) {
 	var value interface{}
@@ -316,8 +345,6 @@ func (db *DB) Delete(key string) error {
 		if err != nil {
 			if err.Error() == bunt.ErrNotFound.Error() {
 				return err
-			} else {
-				return nil
 			}
 		}
 
@@ -429,23 +456,4 @@ func onError(err error, callback func(err error)) {
 		// run the callback
 		callback(err)
 	}
-}
-
-var TempFileName string
-
-// getTempFileName returns a temporary file name. [unix timestamp].db
-func getTempFileName(n ...string) string {
-	var label string
-	if len(n) > 0 {
-		label = n[0]
-	} else {
-		label = ""
-	}
-	// if TempFileName != "" && n == false {
-	// 	return TempFileName
-	// } else {
-	// 	TempFileName = time.Now().Format("test_20060102150405") + ".db"
-	// 	return TempFileName
-	// }
-	return time.Now().Format(label+"20060102150405") + ".db"
 }
