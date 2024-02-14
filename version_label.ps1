@@ -5,5 +5,5 @@ param(
     [string]$version_label
 )
 
-# set the version label to git tag
-git tag $version_label
+# set the version label to git tag formatted as: git tag -a "v1.5.0-beta" -m "version v1.5.0-beta"
+git tag -a "v$version_label" -m "version v$version_label"
