@@ -1,5 +1,7 @@
 package swmemdb
 
+// TODO: when no file is set, automatically set to memory mode
+
 import (
 	"time"
 
