@@ -35,7 +35,7 @@ func defaultBuntDbOptions() buntDbOptions {
 	return buntDbOptions{
 		file:       "data.db",
 		collection: "data",
-		mode:       "file",
+		mode:       "memory",
 		SyncPolicy: bunt.EverySecond,
 	}
 }
