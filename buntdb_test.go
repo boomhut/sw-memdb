@@ -1140,6 +1140,41 @@ func TestGetKeysFromCollection(t *testing.T) {
 
 }
 
+// Test func (db *DB) UpdateToCollection(collection string, key string, value string)
+func TestUpdateToCollection(t *testing.T) {
+	db := NewBuntDb(WithMode("mem"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = db.SetToCollection("testtable", "testkey", "testvalue", 5*time.Second)
+	if err != nil {
+		t.Errorf("SetToCollection() = %v, want %v", err, "nil")
+	}
+
+	err = db.UpdateToCollection("testtable", "testkey", "newvalue")
+	if err != nil {
+		t.Errorf("UpdateToCollection() = %v, want %v", err, "nil")
+	}
+
+	val, err := db.GetFromCollection("testtable", "testkey")
+	if err != nil {
+		t.Errorf("GetFromCollection() = %v, want %v", err, "nil")
+	}
+
+	if val != "newvalue" {
+		t.Errorf("GetFromCollection() = %v, want %v", val, "newvalue")
+	}
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
 // getTempFileName returns a temporary file name. [unix timestamp].db
 func getTempFileName(n ...string) string {
 	var label string

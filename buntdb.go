@@ -35,7 +35,7 @@ func defaultBuntDbOptions() buntDbOptions {
 	return buntDbOptions{
 		file:       "data.db",
 		collection: "data",
-		mode:       "memory",
+		mode:       "memory ",
 		SyncPolicy: bunt.EverySecond,
 	}
 }
@@ -293,6 +293,22 @@ func (db *DB) SetToCollection(collection string, key string, value string, exps 
 
 		// set the key/value
 		_, _, err := tx.Set(collection+":"+key, value, &bunt.SetOptions{Expires: true, TTL: exp})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+}
+
+// UpdateToCollection updates the value for a key in a collection.
+func (db *DB) UpdateToCollection(collection string, key string, value string) error {
+
+	return db.db.Update(func(tx *bunt.Tx) error {
+
+		// set the key/value
+		_, _, err := tx.Set(collection+":"+key, value, &bunt.SetOptions{Expires: true})
 		if err != nil {
 			return err
 		}
