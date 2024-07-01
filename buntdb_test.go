@@ -3,6 +3,7 @@ package swmemdb
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -48,7 +49,7 @@ func TestInit(t *testing.T) {
 	}
 
 	// close the connection
-	err = db.db.Close()
+	err = db.Close()
 	if err != nil {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
@@ -112,7 +113,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// close the connection
-	err = db.db.Close()
+	err = db.Close()
 	if err != nil {
 		t.Errorf("Close() = %v, want %v", err, "nil")
 	}
@@ -667,6 +668,45 @@ func TestGetKeys(t *testing.T) {
 
 }
 
+// Test Update
+func TestUpdate(t *testing.T) {
+	tempfile15 = getTempFileName("TestUpdate")
+	// open the first database
+	db1 := NewBuntDb(WithFile("test_"+tempfile15), WithMode("file"), WithCollection("testtable5"))
+
+	// set some data in the first collection
+	str := "testvalue1"
+
+	// set the key/value
+	err := db1.Set("testkey1", str, 10*time.Second)
+	if err != nil {
+		t.Errorf("Set() = %v, want %v", err, "nil")
+	}
+
+	// update the key
+	err = db1.Update("testkey1", "testvalue2", 10*time.Second)
+	if err != nil {
+		t.Errorf("Update() = %v, want %v", err, "nil")
+	}
+
+	// check that the key exists
+	val, err := db1.Get("testkey1")
+	if err != nil {
+		t.Errorf("Get() = %v, want %v", err, "nil")
+	}
+
+	if val != "testvalue2" {
+		t.Errorf("Get() = %v, want %v", val, "testvalue2")
+	}
+
+	// close the connection
+	err = db1.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
 // Test GetKeys with no keys
 func TestGetKeysWithNoKeys(t *testing.T) {
 	tempfile15 = getTempFileName("TestGetKeysWithNoKeys")
@@ -1175,6 +1215,41 @@ func TestUpdateToCollection(t *testing.T) {
 
 }
 
+// Test UpdateWithNoExpiration
+func TestUpdateWithNoExpiration(t *testing.T) {
+	db := NewBuntDb(WithMode("memory"), WithCollection("testtable"))
+	err := db.Init()
+	if err != nil {
+		t.Errorf("Init() = %v, want %v", err, "nil")
+	}
+
+	err = db.SetToCollection("testtable", "testkey", "testvalue", 5*time.Second)
+	if err != nil {
+		t.Errorf("SetToCollection() = %v, want %v", err, "nil")
+	}
+
+	err = db.UpdateWithNoExpiration("testkey", "newvalue")
+	if err != nil {
+		t.Errorf("UpdateWithNoExpiration() = %v, want %v", err, "nil")
+	}
+
+	val, err := db.GetFromCollection("testtable", "testkey")
+	if err != nil {
+		t.Errorf("GetFromCollection() = %v, want %v", err, "nil")
+	}
+
+	if val != "newvalue" {
+		t.Errorf("GetFromCollection() = %v, want %v", val, "newvalue")
+	}
+
+	// close the connection
+	err = db.Close()
+	if err != nil {
+		t.Errorf("Close() = %v, want %v", err, "nil")
+	}
+
+}
+
 // getTempFileName returns a temporary file name. [unix timestamp].db
 func getTempFileName(n ...string) string {
 	var label string
@@ -1188,33 +1263,23 @@ func getTempFileName(n ...string) string {
 }
 
 // Clean up
-func TestCleanup(t *testing.T) {
+func Cleanup(t *testing.T) {
+
+	// cleanup
+
 	// delete the database files
-	os.Remove("./test_" + tempfile1)
-	os.Remove("./test_" + tempfile2)
-	os.Remove("./test_" + tempfile3)
-	os.Remove("./test_" + tempfile4)
-	os.Remove("./test_" + tempfile5)
-	os.Remove("./test_" + tempfile6)
-	os.Remove("./test_" + tempfile7)
-	os.Remove("./test_" + tempfile8)
-	os.Remove("./test_" + tempfile9)
-	os.Remove("./test_" + tempfile10)
-	os.Remove("./test_" + tempfile11)
-	os.Remove("./test_" + tempfile12)
-	os.Remove("./test_" + tempfile13)
-	os.Remove("./test_" + tempfile14)
-	os.Remove("./test_a" + tempfile15)
-	os.Remove("./test_" + tempfile16)
-	os.Remove("./test_" + tempfile17)
-	os.Remove("./test_" + tempfile18)
-	os.Remove("./test_" + tempfile19)
-	os.Remove("./test_" + tempfile20)
-	os.Remove("./test_" + tempfile21)
-	os.Remove("./test_" + tempfile22)
+	// remove all files in the current directory with the prefix test_ and the suffix .db
+	files, err := filepath.Glob("test_*.db")
+	if err != nil {
+		t.Errorf("Cleanup() = %v, want %v", err, "nil")
+	}
 
-	// verify that the files are deleted
-
+	for _, file := range files {
+		err = os.Remove(file)
+		if err != nil {
+			t.Errorf("Cleanup() = %v, want %v", err, "nil")
+		}
+	}
 }
 
 // // mustReturn is a helper that wraps a call returning (interface{}, error) and panics if the
@@ -1303,4 +1368,17 @@ func TestOnError(t *testing.T) {
 		}
 	})
 
+}
+
+// run when test finishes to clean up
+func TestMain(m *testing.M) {
+	// run the tests
+	code := m.Run()
+
+	// get t from testing
+	t := new(testing.T)
+	Cleanup(t)
+
+	// exit
+	os.Exit(code)
 }
